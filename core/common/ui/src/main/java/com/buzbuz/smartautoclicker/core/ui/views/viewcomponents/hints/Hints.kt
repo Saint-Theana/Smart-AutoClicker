@@ -46,9 +46,17 @@ internal abstract class Hint(
     /** The half of an icon size. */
     protected val iconHalfSize = iconsSize / 2
     /** The drawable of the icon. */
-    protected val icon = ContextCompat.getDrawable(context, iconId)!!.apply {
-        setTint(context.resources.getColor(R.color.overlayViewPrimary, null))
-    }.mutate()
+    protected val icon = run {
+    // 1. 如果 iconId 为 0，直接跳过，不加载
+    val drawable = if (iconId != 0) ContextCompat.getDrawable(context, iconId) else null
+    // 2. 如果加载失败或为 0，使用一个 1x1 透明像素作为“万能占位图”，保证永不崩溃
+    drawable ?: android.graphics.drawable.BitmapDrawable(
+        context.resources,
+        android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ALPHA_8)
+    )
+}.apply {
+    setTint(context.resources.getColor(R.color.overlayViewPrimary, null))
+}.mutate()
     /** True if this hints should be hidden, false if not. */
     private var isHidden: Boolean = false
 
